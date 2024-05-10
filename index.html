@@ -1,0 +1,125 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+
+    <script src="https://code.highcharts.com/stock/highstock.js"></script>
+    <script src="https://code.highcharts.com/stock/modules/export-data.js"></script>
+    <script src="https://code.highcharts.com/modules/accessibility.js"></script>
+
+    <style>
+        body {
+            background-color: #0e0e0e; /* Dark background for the page */
+            color: #e0e0e0; /* Light text color for readability */
+        }
+        #container {
+            height: 400px;
+            width: 700px;
+        }
+    </style>
+
+</head>
+
+<body>
+    <div id="container"></div>
+    <script>
+        (async () => {
+
+            // Load the dataset
+            const response = await fetch('https://www.alphavantage.co/query?function=TIME_SERIES_DAILY&symbol=RELIANCE.BSE&outputsize=full&apikey=demo');
+            const data = await response.json();
+
+            // Process the data to fit the Highcharts format
+            const processedData = Object.entries(data['Time Series (Daily)']).map(([date, value]) => {
+                return [
+                    new Date(date).getTime(), // the date
+                    parseFloat(value['4. close']) // the closing price
+                ];
+            }).reverse();
+
+            // create the chart
+            Highcharts.stockChart('container', {
+
+                chart: {
+                    backgroundColor: 'rgba(0,0,0,0)' // Transparent background for the chart
+                },
+
+                yAxis: {
+                    opposite: false, // This will move the y-axis to the left side
+                    labels: {
+                        style: {
+                            color: '#e0e0e0' // Light text color for the y-axis labels
+                        }
+
+                    },
+                    gridLineColor: '#444'
+                },
+                xAxis: {
+                    labels:{
+                        style :{
+                            color: '#fff',
+                        }
+                    },
+                    // gridLineColor: '',
+                    gridLineDashStyle: 'dotted'
+                },
+
+                rangeSelector: {
+                    buttons: [{
+                        type: 'hour',
+                        count: 1,
+                        text: '1H'
+                    }, {
+                        type: 'day',
+                        count: 1,
+                        text: '1D'
+                    }, {
+                        type: 'month',
+                        count: 1,
+                        text: '1M'
+                    }, {
+                        type: 'year',
+                        count: 1,
+                        text: '1Y'
+                    }, {
+                        type: 'year',
+                        count: 5,
+                        text: '5Y'
+                    }],
+                    selected: 1,
+                    inputEnabled: false
+                },
+
+                series: [{
+                    name: 'RELIANCE.BSE',
+                    type: 'area',
+                    data: processedData,
+                    gapSize: 5,
+                    tooltip: {
+                        valueDecimals: 2
+                    },
+                    fillColor: {
+                        linearGradient: {
+                            x1: 0,  
+                            y1: 0,
+                            x2: 0,
+                            y2: 1
+                        },
+                        stops: [
+                            [0, 'rgba(0,128,0,0.75)'], // Bright green with some transparency
+                            [1, 'rgba(0,128,0,0)'] // Transparent
+                        ]
+                    },
+                    lineColor: '#00ff00', // Bright green line color
+                    threshold: null
+                }]
+            });
+        })();
+
+    </script>
+</body>
+
+</html>
